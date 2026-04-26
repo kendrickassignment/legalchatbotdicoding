@@ -1,0 +1,2 @@
+Fine-tuned Model: https://huggingface.co/kendrickfff/Qwen2.5-1.5B-Indonesian-Assistant
+GRPO Model: https://huggingface.co/kendrickfff/Qwen2.5-1.5B-Indonesian-Assistant-GRPO

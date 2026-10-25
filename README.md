@@ -1,156 +1,120 @@
-# Legal Team Chatbot with Fine-Tuned LLM, GRPO, and Advanced RAG
+# LexID — Indonesian Legal RAG with Qwen3.8-27B
 
-This project is an end-to-end **Generative AI legal assistant** built for an Indonesian Legal Team. It combines **supervised fine-tuning**, **GRPO-based reasoning optimization**, and an **advanced Retrieval-Augmented Generation (RAG)** pipeline to answer legal questions based on official Indonesian regulations.
+Pipeline modular untuk riset asisten tim legal Indonesia: **QLoRA/SFT → GRPO → hybrid RAG → jawaban bersitasi**.
 
-The system was developed as a final project and covers the full workflow from model adaptation to retrieval and interface deployment.
+**Author:** Kendrick Filbert
 
-## Project Overview
+> **Source-only portfolio.** Repositori ini dipublikasikan tanpa menjalankan proyek. Output dan execution count notebook dikosongkan. Tidak ada GitHub Actions, training otomatis, deployment, atau layanan yang diaktifkan. Belum tersedia model hasil SFT/GRPO mahasiswa atau klaim akurasi chatbot yang telah diukur.
 
-This project is divided into three main stages:
+Versi aktif ini memakai Qwen3.8-27B. Implementasi terdahulu Qwen2.5-1.5B, termasuk notebook, README, requirements, dan tautan modelnya, disimpan di [arsip versi lama](https://github.com/kendrickassignment/legalchatbotdicoding/tree/main/archive/qwen2.5-1.5b). Hasil yang tercantum dalam arsip tersebut berlaku untuk versi lama.
 
-1. **Fine-tuning a Small Language Model**
-   - Base model: `Qwen2.5-1.5B`
-   - Dataset: `Ichsan2895/alpaca-gpt4-indonesian`
-   - Method: **QLoRA** with 4-bit loading and LoRA adapters on both attention and feed-forward layers
-   - Two supervised fine-tuning experiments were conducted to compare hyperparameter settings
+## Apa yang diimplementasikan
 
-2. **GRPO for Reasoning Behavior**
-   - The fine-tuned model was further optimized using **GRPO (Group Relative Policy Optimization)**
-   - The objective was to encourage the model to produce explicit reasoning in the format:
-     ```text
-     <think>...</think>
-     ```
-   - Four reward functions were designed for format, reasoning length, answer correctness, and Indonesian language consistency
+| Komponen | Implementasi |
+|---|---|
+| Model | `Qwen/Qwen3.8-27B`, revision terkunci |
+| Data SFT/GRPO | Hanya `Ichsan2895/alpaca-gpt4-indonesian`; normalisasi, deduplikasi prompt, train/validation split, native chat template |
+| Fine-tuning | NF4 4-bit, double quantization, FFN LoRA; dua konfigurasi SFT masing-masing 800 steps |
+| Reinforcement learning | TRL GRPO; reward format, panjang ringkasan alasan, kemiripan jawaban, dan bahasa Indonesia |
+| Ingestion | Empat PDF tugas, metadata halaman, OCR dengan deteksi orientasi dan cache per halaman |
+| Retrieval | Multilingual E5 + FAISS, BM25, weighted reciprocal-rank fusion, metadata prefilter, parent-child chunks |
+| Advanced RAG | Dua hipotesis HyDE, cross-encoder Top-3, threshold dan fallback DuckDuckGo dengan kueri publik eksplisit |
+| Grounding | Sumber bernomor, halaman PDF 1-based, validasi ID sitasi, penahanan jawaban jika sitasi tidak valid |
+| Interface | `input()` + `IPython.display.Markdown`, serta Gradio localhost opsional |
+| Engineering | CLI, konfigurasi revision, contract tests, validasi bukti submission, packager |
 
-3. **Advanced RAG System**
-   - Built using official Indonesian legal PDF documents
-   - Includes:
-     - metadata enrichment
-     - parent-child chunking
-     - FAISS vector store
-     - BM25 + semantic ensemble retrieval
-     - HyDE (Hypothetical Document Embeddings)
-     - reranking with a cross-encoder
-     - threshold-based fallback to DuckDuckGo
-   - Wrapped with a simple **Gradio interface**
+Tabel tersebut menjelaskan kode yang tersedia. Keberhasilan training GPU, peningkatan kualitas GRPO, dan akurasi jawaban legal **belum dibuktikan** oleh repositori ini.
 
-## Features
+## Arsitektur
 
-- Fine-tuned Indonesian legal assistant
-- GRPO-enhanced reasoning output using `<think>...</think>`
-- PDF-based legal knowledge retrieval
-- Metadata-aware document handling
-- Hybrid retrieval with **BM25 + semantic search**
-- Parent-child retrieval for better context reconstruction
-- HyDE query expansion
-- Cross-encoder reranking
-- Internet fallback via DuckDuckGo when local relevance is too low
-- Gradio-based chatbot interface
-
-## Tech Stack
-
-- **Python**
-- **PyTorch**
-- **Unsloth**
-- **Transformers**
-- **TRL**
-- **PEFT / LoRA**
-- **LangChain**
-- **FAISS**
-- **Sentence Transformers**
-- **Gradio**
-
-## Model Repositories
-
-- Fine-tuned model:  
-  [kendrickfff/Qwen2.5-1.5B-Indonesian-Assistant](https://huggingface.co/kendrickfff/Qwen2.5-1.5B-Indonesian-Assistant)
-
-- GRPO model:  
-  [kendrickfff/Qwen2.5-1.5B-Indonesian-Assistant-GRPO](https://huggingface.co/kendrickfff/Qwen2.5-1.5B-Indonesian-Assistant-GRPO)
-
-## Project Structure
-
-```bash
-.
-├── Fine-tuning_submission_PGABL_Kendrick_Filbert.ipynb
-├── GRPO_submission_PGABL_Kendrick_Filbert.ipynb
-├── RAG_submission_PGABL_Kendrick_Filbert.ipynb
-├── requirements.txt
-└── README.md
+```mermaid
+flowchart LR
+    PDF[Empat PDF tugas] --> Extract[Ekstraksi halaman dan OCR]
+    Extract --> Chunk[Parent dan child chunks]
+    Chunk --> Dense[Multilingual E5 / FAISS]
+    Chunk --> Keyword[BM25]
+    Q[Pertanyaan] --> HyDE[Dua hipotesis HyDE]
+    HyDE --> Dense
+    Q --> Keyword
+    Dense --> Fuse[Weighted RRF dan metadata filter]
+    Keyword --> Fuse
+    Fuse --> Parent[Parent expansion dan deduplikasi]
+    Parent --> Rank[Cross-encoder Top-3]
+    Rank --> Gate{Skor relevansi cukup?}
+    Gate -->|Ya| Context[Konteks PDF]
+    Gate -->|Tidak| Search[DuckDuckGo dengan kueri publik]
+    Context --> Model[Model SFT / GRPO mahasiswa]
+    Search --> Model
+    Model --> Answer[Validasi sitasi dan tampilkan sumber]
 ```
 
-## Fine-Tuning Highlights
+## Struktur
 
-- Chat template mapping using Hugging Face `datasets.map()`
-- QLoRA with 4-bit quantization
-- LoRA adapters applied to:
-  - Attention: `q_proj`, `k_proj`, `v_proj`, `o_proj`
-  - FFN: `gate_proj`, `up_proj`, `down_proj`
-- Train/validation split
-- Two experiments with different learning rates, schedulers, and effective batch sizes
-- Final fine-tuned model uploaded to Hugging Face in **merged 16-bit** format
-
-## GRPO Highlights
-
-The GRPO stage used the fine-tuned model as initialization and introduced four custom reward functions:
-
-- **format_reward_func**  
-  Rewards correct `<think>...</think>` structure
-
-- **reasoning_length_reward**  
-  Rewards longer and more meaningful reasoning traces
-
-- **correctness_reward**  
-  Rewards output similarity to ground-truth answers using ROUGE-L
-
-- **language_reward_func**  
-  Rewards Indonesian output and penalizes English answers
-
-## RAG Pipeline Highlights
-
-The RAG system uses four official Indonesian legal documents as the knowledge base and includes:
-
-- explicit chunk size and overlap
-- metadata enrichment for document title, type, year, and page
-- FAISS for vector search
-- BM25 retriever for lexical search
-- weighted ensemble retrieval
-- parent-child chunk expansion
-- HyDE for hypothetical answer-based retrieval
-- cross-encoder reranking
-- fallback to DuckDuckGo when document relevance is below threshold
-- answer generation with citations
-
-## Example Use Case
-
-**Prompt:**  
-*“Saya staf admin, kemarin lembur 3 jam untuk beresin laporan. Apakah saya berhak dapat uang lembur?”*
-
-The system retrieves relevant legal passages, reranks them, and generates an answer with source citations.  
-In the GRPO version, the model can also produce an explicit reasoning trace using `<think>...</think>`.
-
-## Installation
-
-```bash
-pip install -r requirements.txt
+```text
+src/legal_rag/
+  data.py          # preprocessing dataset dan chat template
+  training.py      # SFT dan GRPO
+  rewards.py       # empat reward functions
+  hub.py           # merged export dan verifikasi model publik
+  corpus.py        # ekstraksi PDF, metadata, parent-child chunks
+  ocr.py           # OCR resumable dan orientasi teks
+  retrieval.py     # FAISS/BM25 fusion dan reranker
+  faiss_worker.py  # isolasi runtime OpenMP untuk Windows
+  generation.py    # hanya memuat model mahasiswa yang terverifikasi
+  pipeline.py      # HyDE, sumber, threshold, fallback, sitasi
+  interfaces.py    # loop notebook dan Gradio
+  evaluation.py    # evaluasi retrieval dan visualisasi log nyata
+  cli.py           # entry point
+configs/           # konfigurasi model, data, dan hyperparameter
+tests/             # source contract tests; tidak dijalankan saat publikasi
+scripts/           # pembuat notebook, validator, packager
+docs/              # rubrik dan panduan eksekusi manual untuk pengembangan berikutnya
 ```
 
-## Notes
+Tiga notebook submission disediakan sebagai **source yang belum dieksekusi**. Memanggil `scripts/create_notebooks.py` hanya membuat file notebook, tidak mengeksekusinya.
 
-This project was developed with free-tier GPU constraints in mind, so the implementation prioritizes:
-- efficient fine-tuning
-- memory-aware training settings
-- lightweight but capable model selection
+## Data dan model
 
-## Outcome
+Dataset wajib: [Ichsan2895/alpaca-gpt4-indonesian](https://huggingface.co/datasets/Ichsan2895/alpaca-gpt4-indonesian).
 
-This submission was successfully accepted and evaluated positively for:
-- comprehensive notebook structure
-- complete fine-tuning, GRPO, and RAG workflow
-- strong effort in modular function design and testing
+Knowledge base tugas: [folder dokumen Google Drive](https://drive.google.com/drive/folders/1LHZ1IncPmmUN5kytFu3i7MoaafFrKDql). Empat dokumen yang diharapkan:
 
-## Author
+- `PP Nomor 5 Tahun 2021.pdf`
+- `PP Nomor 35 Tahun 2021.pdf`
+- `PP Nomor 51 Tahun 2023.pdf`
+- `UU Nomor 6 Tahun 2023.pdf`
 
-**Kendrick Filbert**
+PDF, dataset unduhan, model weights, checkpoint, FAISS index, hasil eksekusi, dan credential tidak dimasukkan ke Git. Folder `data/evaluation/` hanya berisi kueri pengembangan retrieval, bukan data tambahan untuk SFT/GRPO.
 
----
+Model upstream: [Qwen3.8-27B resmi](https://huggingface.co/Qwen/Qwen3.8-27B). Model ini memakai arsitektur `qwen3_5` dan label Hub `image-text-to-text`, dengan komponen causal language model. Jika rubrik menafsirkan task Text Generation secara ketat, kesesuaiannya perlu diperiksa sebelum submission. Dokumentasi [Unsloth Qwen3.5](https://unsloth.ai/docs/models/qwen3.5/fine-tune) juga mencatat risiko kuantisasi 4-bit; stack GPU di sini merupakan konfigurasi kandidat yang belum diverifikasi dengan training nyata.
+
+## Eksekusi manual di kemudian hari
+
+Tidak ada perintah pada bagian ini yang dijalankan sebagai bagian dari publikasi GitHub. Dokumentasi disediakan untuk pembaca yang kelak memilih menjalankannya sendiri.
+
+```bash
+python -m venv .venv
+# Aktifkan virtual environment sesuai OS.
+pip install -e .
+python -m legal_rag.cli preflight
+```
+
+Letakkan empat PDF asli di `data/raw/` sebelum ingestion. Langkah GPU tersedia di [runbook](docs/RUNBOOK_GPU.md). Token Hugging Face disimpan di environment variable atau secret manager; `.env.example` hanya mendokumentasikan nama variabel. Tidak ada token yang perlu ditulis dalam notebook.
+
+## Batas yang perlu diperhatikan
+
+- Belum ada artefak fine-tuning, GRPO, model publik mahasiswa, atau jawaban end-to-end yang dapat diklaim sebagai hasil proyek ini. `link_huggingface.txt` menyatakan status tersebut secara eksplisit.
+- Threshold reranker masih provisional. Skor cross-encoder dan ID sitasi valid tidak membuktikan seluruh klaim jawaban benar atau didukung sumber.
+- Reward bahasa/kemiripan merupakan proxy, bukan pembuktian tata bahasa, reasoning, atau kebenaran hukum.
+- OCR tabel memerlukan pemeriksaan relasi baris/kolom pada PDF asli. Dokumen tugas adalah korpus historis, bukan verifikasi hukum terkini.
+- Gradio adalah antarmuka localhost opsional. Autentikasi multi-user, deployment, dan operasi production belum tersedia.
+- Versi ini belum memenuhi ketentuan submission yang mewajibkan notebook training dijalankan dan model hasil training dipublikasikan. Lihat [matriks rubrik](docs/RUBRIC.md).
+
+## Referensi
+
+- [TRL GRPOTrainer](https://huggingface.co/docs/trl/grpo_trainer)
+- [Multilingual E5](https://huggingface.co/intfloat/multilingual-e5-small)
+- [Cross-encoder multilingual](https://huggingface.co/cross-encoder/mmarco-mMiniLMv2-L12-H384-v1)
+- [Kebutuhan perangkat Unsloth](https://unsloth.ai/docs/get-started/fine-tuning-for-beginners/unsloth-requirements)
+
+Lisensi model, dataset, dan dependensi mengikuti sumber masing-masing. Repository ini tidak memberikan klaim nasihat hukum atau jaminan penilaian submission.

@@ -1,0 +1,12 @@
+{
+  "publication_mode": "source_only",
+  "status_scope": "current_qwen3_8_27b_source",
+  "legacy_archive": "archive/qwen2.5-1.5b",
+  "project_execution_requested": false,
+  "notebook_outputs_cleared": true,
+  "automatic_workflows_configured": false,
+  "trained_student_model_available": false,
+  "submission_ready": false,
+  "student": "Kendrick Filbert",
+  "requested_model": "Qwen/Qwen3.8-27B"
+}

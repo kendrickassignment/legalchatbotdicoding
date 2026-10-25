@@ -1,0 +1,13 @@
+# CPU component verification environment, separate from the GPU training stack.
+# Use: pip install -r requirements.txt -c constraints-cpu-verified.txt
+numpy==1.26.4
+torch==2.4.1
+transformers==4.51.3
+sentence-transformers==3.4.1
+huggingface-hub==0.36.2
+datasets==3.0.1
+onnxruntime==1.31.0
+rapidocr-onnxruntime==1.4.4
+rank-bm25==0.2.2
+faiss-cpu==1.10.0
+langdetect==1.0.9

@@ -1,0 +1,10 @@
+# Candidate GPU stack checked against PyPI 2026-10-25; not GPU-tested locally.
+# Install in a fresh Linux CUDA environment. pip check must succeed.
+-r requirements.txt
+unsloth==2026.10.8
+unsloth_zoo==2026.10.8
+transformers==5.17.0
+trl==1.15.0
+bitsandbytes>=0.48
+accelerate>=1.10
+peft>=0.18

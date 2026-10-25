@@ -1,0 +1,11 @@
+[
+  {"id":"lembur_hak", "question":"Menurut PP Nomor 35 Tahun 2021, apakah pengusaha wajib membayar upah kerja lembur dan adakah pengecualian jabatan tertentu?", "doc_id":"PP_35_2021", "relevant_pages":[17]},
+  {"id":"lembur_batas", "question":"Berapa batas maksimal waktu kerja lembur per hari dan per minggu dalam PP 35 Tahun 2021?", "doc_id":"PP_35_2021", "relevant_pages":[17]},
+  {"id":"pkwt_kompensasi", "question":"Menurut PP 35 Tahun 2021, kapan uang kompensasi diberikan pada akhir PKWT?", "doc_id":"PP_35_2021", "relevant_pages":[11,12]},
+  {"id":"pkwt_besaran", "question":"Bagaimana besaran uang kompensasi PKWT selama 12 bulan menurut Pasal 16 PP 35 Tahun 2021?", "doc_id":"PP_35_2021", "relevant_pages":[12], "filters":{"doc_id":"PP_35_2021"}},
+  {"id":"risiko_rendah", "question":"Menurut PP 5 Tahun 2021, perizinan berusaha untuk kegiatan usaha berisiko rendah berupa apa?", "doc_id":"PP_5_2021", "relevant_pages":[11]},
+  {"id":"risiko_tinggi", "question":"Apa persyaratan NIB dan izin untuk kegiatan usaha berisiko tinggi dalam Pasal 15 PP 5 Tahun 2021?", "doc_id":"PP_5_2021", "relevant_pages":[13], "filters":{"doc_id":"PP_5_2021"}},
+  {"id":"ump_variabel", "question":"Variabel apa yang digunakan untuk penyesuaian nilai upah minimum menurut PP 51 Tahun 2023?", "doc_id":"PP_51_2023", "relevant_pages":[3,4]},
+  {"id":"ump_tanggal", "question":"Menurut Pasal 29 PP 51 Tahun 2023, kapan upah minimum provinsi diumumkan dan mulai berlaku?", "doc_id":"PP_51_2023", "relevant_pages":[7], "filters":{"doc_id":"PP_51_2023"}},
+  {"id":"uu6_penetapan", "question":"Apa yang ditetapkan menjadi undang-undang oleh Pasal 1 UU Nomor 6 Tahun 2023?", "doc_id":"UU_6_2023", "relevant_pages":[3], "filters":{"doc_id":"UU_6_2023"}}
+]

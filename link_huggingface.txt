@@ -1,2 +1,3 @@
-Fine-tuned Model: https://huggingface.co/kendrickfff/Qwen2.5-1.5B-Indonesian-Assistant
-GRPO Model: https://huggingface.co/kendrickfff/Qwen2.5-1.5B-Indonesian-Assistant-GRPO
+BELUM TERSEDIA: belum ada training GPU atau model mahasiswa yang dipublikasikan.
+File ini akan diganti otomatis dengan URL repo SFT dan GRPO yang telah diverifikasi publik oleh legal_rag.hub.publish.
+JANGAN KUMPULKAN DRAF INI sebagai submission final.

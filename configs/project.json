@@ -1,0 +1,30 @@
+{
+  "student": "Kendrick Filbert",
+  "base_model": "Qwen/Qwen3.8-27B",
+  "base_revision": "1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0",
+  "dataset": "Ichsan2895/alpaca-gpt4-indonesian",
+  "dataset_revision": "4790943e56ebac4626f0717e00a13e8d956645c2",
+  "embedding_model": "intfloat/multilingual-e5-small",
+  "embedding_revision": "614241f622f53c4eeff9890bdc4f31cfecc418b3",
+  "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+  "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+  "seed": 3407,
+  "validation_fraction": 0.05,
+  "max_seq_length": 2048,
+  "child_size": 800,
+  "child_overlap": 120,
+  "parent_size": 2400,
+  "parent_overlap": 240,
+  "bm25_weight": 0.45,
+  "dense_weight": 0.55,
+  "rrf_k": 60,
+  "candidate_k": 20,
+  "rerank_k": 3,
+  "rerank_threshold": 0.45,
+  "threshold_status": "provisional; calibrate on held-out relevance labels",
+  "experiments": [
+    {"name": "sft_a", "learning_rate": 0.0001, "r": 16, "lora_alpha": 32, "max_steps": 800},
+    {"name": "sft_b", "learning_rate": 0.00005, "r": 32, "lora_alpha": 64, "max_steps": 800}
+  ],
+  "grpo": {"max_steps": 200, "num_generations": 2, "max_prompt_length": 768, "max_completion_length": 384, "gradient_accumulation_steps": 4}
+}
